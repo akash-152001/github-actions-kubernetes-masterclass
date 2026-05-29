@@ -1,0 +1,7 @@
+grafana:
+  additionalDataSources:
+  - access: proxy
+    name: Loki
+    type: loki
+    uid: loki
+    url: http://loki:3100
