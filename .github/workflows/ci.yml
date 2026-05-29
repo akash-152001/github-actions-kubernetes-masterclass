@@ -1,3 +1,4 @@
+```yaml
 name: CI
 
 on:
@@ -49,6 +50,11 @@ jobs:
           go-version-file: backend/go.mod
           cache: true
 
+      - name: Download Go Dependencies
+        run: |
+          go mod tidy
+          go mod download
+
       - name: Go fmt
         run: |
           test -z "$(gofmt -l .)"
@@ -63,13 +69,31 @@ jobs:
     name: SAST Scan (GoSec)
     runs-on: ubuntu-latest
 
+    defaults:
+      run:
+        working-directory: backend
+
     steps:
       - uses: actions/checkout@v4
 
-      - name: Run GoSec
-        uses: securego/gosec@v2.22.4
+      - name: Setup Go
+        uses: actions/setup-go@v5
         with:
-          args: -severity medium ./backend/...
+          go-version-file: backend/go.mod
+          cache: true
+
+      - name: Download Go Dependencies
+        run: |
+          go mod tidy
+          go mod download
+
+      - name: Install GoSec
+        run: |
+          go install github.com/securego/gosec/v2/cmd/gosec@latest
+
+      - name: Run GoSec
+        run: |
+          ~/go/bin/gosec ./...
 
   trivy-fs:
     name: Trivy Filesystem Scan
@@ -126,7 +150,6 @@ jobs:
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/skillpulse-${{ matrix.service }}:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/skillpulse-${{ matrix.service }}:${{ github.sha }}
-
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -152,3 +175,5 @@ jobs:
           image-ref: ${{ secrets.DOCKERHUB_USERNAME }}/skillpulse-${{ matrix.service }}:${{ github.sha }}
           format: table
           severity: HIGH,CRITICAL
+```
+
