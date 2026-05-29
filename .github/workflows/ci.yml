@@ -140,13 +140,12 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and push image
+      - name: Build and push image (IMMUTABLE TAG ONLY)
         uses: docker/build-push-action@v6
         with:
           context: ./${{ matrix.service }}
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/skillpulse-${{ matrix.service }}:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/skillpulse-${{ matrix.service }}:${{ github.sha }}
 
           cache-from: type=gha
