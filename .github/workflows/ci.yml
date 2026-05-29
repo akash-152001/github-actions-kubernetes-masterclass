@@ -55,8 +55,7 @@ jobs:
           go mod download
 
       - name: Go fmt
-        run: |
-          test -z "$(gofmt -l .)"
+        run: test -z "$(gofmt -l .)"
 
       - name: Go vet
         run: go vet ./...
@@ -90,8 +89,7 @@ jobs:
         run: go install github.com/securego/gosec/v2/cmd/gosec@latest
 
       - name: Run GoSec
-        run: |
-          ~/go/bin/gosec -severity medium ./...
+        run: ~/go/bin/gosec -severity medium ./...
 
   trivy-fs:
     name: Trivy Filesystem Scan
@@ -140,13 +138,17 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and push image (IMMUTABLE TAG ONLY)
+      - name: Set IMAGE TAG
+        id: vars
+        run: echo "tag=${GITHUB_SHA}" >> $GITHUB_OUTPUT
+
+      - name: Build and push image (IMMUTABLE ONLY)
         uses: docker/build-push-action@v6
         with:
           context: ./${{ matrix.service }}
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/skillpulse-${{ matrix.service }}:${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/skillpulse-${{ matrix.service }}:${{ steps.vars.outputs.tag }}
 
           cache-from: type=gha
           cache-to: type=gha,mode=max
