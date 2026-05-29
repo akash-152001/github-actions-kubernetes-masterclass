@@ -69,7 +69,7 @@ jobs:
       - name: Run GoSec
         uses: securego/gosec@v2.22.4
         with:
-          args: -severity medium,high ./backend/...
+          args: -severity medium ./backend/...
 
   trivy-fs:
     name: Trivy Filesystem Scan
